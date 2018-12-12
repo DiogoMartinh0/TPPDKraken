@@ -10,6 +10,7 @@ public class Client {
     LoginForm formLogin;
     Socket mySocket;
 
+
     public Client(String args[]){
         formLogin = new LoginForm(args[0], mySocket);
     }
