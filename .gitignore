@@ -2,3 +2,7 @@
 \.idea/libraries/mysql_connector_java_8_0_13\.xml
 
 out/artifacts/*.jar
+
+\.idea/misc\.xml
+
+\.idea/workspace\.xml
