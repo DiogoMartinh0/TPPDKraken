@@ -1,6 +1,7 @@
 package Client.GUI;
 
 import javax.swing.*;
+import javax.swing.border.Border;
 import javax.swing.event.TreeModelListener;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -44,6 +45,9 @@ public class MainApplication extends JFrame{
 
 
         this.label_welcomeUser.setText(String.format("Hello %s!", username));
+
+        Border paddingBorder = BorderFactory.createEmptyBorder(3, 3, 3, 10);
+        this.label_welcomeUser.setBorder(BorderFactory.createCompoundBorder(null, paddingBorder));
 
 
 
