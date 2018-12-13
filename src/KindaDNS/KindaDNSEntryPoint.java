@@ -2,6 +2,7 @@ package KindaDNS;
 
 import Models.ServerDetails;
 
+import javax.sound.midi.Soundbank;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -39,7 +40,7 @@ public class KindaDNSEntryPoint {
 
                         newConnection.close();
 
-                        System.out.println("\nUm cliente requisitou a lista de servidores!");
+                        System.out.println("\n->Um cliente requisitou a lista de servidores!");
                     } catch (SocketException e){
                         System.out.println("SocketException para o socket [socketRespostas]");
                     }
@@ -71,7 +72,7 @@ public class KindaDNSEntryPoint {
 
                         newConnection.close();
 
-                        System.out.println("\nUm servidor registou-se na lista de servidores!");
+                        System.out.println("\n->Um servidor registou-se na lista de servidores!");
                     } catch (SocketException e){
                         System.out.println("SocketException para o socket [socketRegistos]");
                     } catch (ClassNotFoundException e) {

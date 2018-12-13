@@ -27,4 +27,8 @@ public class UserDetails {
     }
 
     public String getNome() { return nome; }
+
+    public String getSharedFolder() {
+        return sharedFolder;
+    }
 }

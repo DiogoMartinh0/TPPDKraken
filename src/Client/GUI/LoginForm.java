@@ -10,6 +10,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowEvent;
 import java.io.*;
 import java.net.Socket;
 import java.util.ArrayList;
@@ -34,8 +35,6 @@ public class LoginForm extends JFrame{
     private final String defaultComboBoxString = "Select a server";
 
     ArrayList<ServerDetails> alSD;
-
-    Socket socket = null;
 
     public LoginForm(ClientTCPHandler clientTCPHandler, String arg) {
         super("TP PD Client Login");
@@ -80,7 +79,7 @@ public class LoginForm extends JFrame{
 
         try {
             for (ServerDetails sv : alSD)
-                //serverIP.addItem(String.format("%s [%s:%s]", sv.getNome(), sv.getIp(), sv.getPortaTCP().toString()));
+                //serverIP.addItem(String.format("%s [%s:%s]", sv.getName(), sv.getIp(), sv.getPortaTCP().toString()));
                 serverIP.addItem(sv.toString());
         }catch (Exception e) {
             e.printStackTrace();
@@ -152,8 +151,9 @@ public class LoginForm extends JFrame{
 
         try {
             DataUserLogin dUL = new DataUserLogin(LoginUsername.getText(), LoginPassword.getText());
-            if (clientTCPHandler.authenticateUser(dUL)){
-                new MainApplication(dUL.getUserName());
+            if ((dUL = clientTCPHandler.authenticateUser(dUL)) != null){
+                new MainApplication(dUL);
+                this.setVisible(false);
             }else{
                 JOptionPane.showMessageDialog(getParent(), "Authentication error.");
             }

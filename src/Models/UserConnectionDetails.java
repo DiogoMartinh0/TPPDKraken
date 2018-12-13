@@ -24,7 +24,7 @@ public class UserConnectionDetails extends UserDetails{
     public UserConnectionDetails(UserDetails userDetails,
                                  Integer connectionID, String ip, Integer portaTCP, Integer portaUDP,
                                  String sharedDirectory, Integer nFalhas) {
-        super(userDetails.getUserID(), userDetails.getUsername(), userDetails.getPassword(), userDetails.getNome());
+        super(userDetails.getUserID(), userDetails.getUsername(), userDetails.getPassword(), userDetails.getName());
         this.connectionID = connectionID;
         this.ip = ip;
         this.portaTCP = portaTCP;

@@ -1,5 +1,6 @@
 package Database;
 
+import Models.DataUserLogin;
 import Models.ServerDetails;
 import Models.UserDetails;
 import Server.Server;
@@ -58,29 +59,19 @@ public class DBManager {
         }
     }
 
-    public static void setUserSharedDirectory(String username, String newDirectory){
+    public static DataUserLogin fetchUserInformation(DataUserLogin dataUserLogin){
         try {
-            preparedStatement = conn.prepareStatement(String.format("UPDATE %s.user SET sharedDirectory = ? WHERE username LIKE ?", databaseName));
-            preparedStatement.setString(1, newDirectory);
-            preparedStatement.setString(2, username);
-
-            preparedStatement.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public static UserDetails fetchUserInformation(String username){
-        try {
-            preparedStatement = conn.prepareStatement(String.format("SELECT * FROM %s.user WHERE username LIKE ? LIMIT 1", databaseName));
-            preparedStatement.setString(1, username);
+            preparedStatement = conn.prepareStatement(String.format("SELECT * FROM %s.user WHERE username LIKE ? AND password LIKE ? LIMIT 1", databaseName));
+            preparedStatement.setString(1, dataUserLogin.getUsername());
+            preparedStatement.setString(2, dataUserLogin.getPassword());
 
             ResultSet resultSet = preparedStatement.executeQuery();
             if (!resultSet.next()){
                 // resultado da query é vazio
                 return null;
             }else{
-                return new UserDetails(resultSet.getInt(1), resultSet.getString(2), resultSet.getString(3), resultSet.getString(4), resultSet.getString(5));
+                // Devolve um objecto preenchido
+                return new DataUserLogin(resultSet.getInt(1), resultSet.getString(2), resultSet.getString(3), resultSet.getString(4), resultSet.getString(8));
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -90,13 +81,54 @@ public class DBManager {
     }
 
     public static void updateConnectionDetails(int userID, String ip, int portaTCP, int portaUDP, String sharedDirectory){
+        updateUserIP(userID, ip);
+        updateUserTCPPort(userID, portaTCP);
+        updateUserUDPPort(userID, portaUDP);
+        updateUserSharedDirectory(userID, sharedDirectory);
+        resetNumeroDeFalhas(userID);
+    }
+
+    public static void updateUserIP(int userID, String ip){
         try {
-            preparedStatement = conn.prepareStatement(String.format("UPDATE %s.user SET ip = ?, portaTCP = ?, portaUDP = ?, sharedDirectory = ? WHERE userID = ?", databaseName));
+            preparedStatement = conn.prepareStatement(String.format("UPDATE %s.user SET ip = ? WHERE userID = ?", databaseName));
             preparedStatement.setString(1, ip);
-            preparedStatement.setInt(2, portaTCP);
-            preparedStatement.setInt(3, portaUDP);
-            preparedStatement.setString(4, sharedDirectory);
-            preparedStatement.setInt(5, userID);
+            preparedStatement.setInt(2, userID);
+
+            preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void updateUserTCPPort(int userID, int portaTCP){
+        try {
+            preparedStatement = conn.prepareStatement(String.format("UPDATE %s.user SET portaTCP = ? WHERE userID = ?", databaseName));
+            preparedStatement.setInt(1, portaTCP);
+            preparedStatement.setInt(2, userID);
+
+            preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void updateUserUDPPort(int userID, int portaUDP){
+        try {
+            preparedStatement = conn.prepareStatement(String.format("UPDATE %s.user SET portaUDP = ? WHERE userID = ?", databaseName));
+            preparedStatement.setInt(1, portaUDP);
+            preparedStatement.setInt(2, userID);
+
+            preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void updateUserSharedDirectory(int userID, String newDirectory){
+        try {
+            preparedStatement = conn.prepareStatement(String.format("UPDATE %s.user SET sharedDirectory = ? WHERE userID = ?", databaseName));
+            preparedStatement.setString(1, newDirectory);
+            preparedStatement.setInt(2, userID);
 
             preparedStatement.executeUpdate();
         } catch (SQLException e) {

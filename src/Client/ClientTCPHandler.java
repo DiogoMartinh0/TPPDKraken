@@ -22,7 +22,7 @@ public class ClientTCPHandler {
             throw new IllegalStateException("socketToServer is on an invalid state...");
     }
 
-    public boolean authenticateUser(DataUserLogin dUL) throws IOException, ClassNotFoundException {
+    public DataUserLogin authenticateUser(DataUserLogin dUL) throws IOException, ClassNotFoundException {
         isSocketValid();
 
         ObjectOutputStream out = new ObjectOutputStream(socketToServer.getOutputStream());
@@ -32,12 +32,7 @@ public class ClientTCPHandler {
         ObjectInputStream in = new ObjectInputStream(socketToServer.getInputStream());
         dUL = (DataUserLogin) in.readObject();
 
-        if (dUL.getAuthenticationSuccessful()) {
-            // Autenticado com sucesso
-            return true;
-        }
-
-        return false;
+        return dUL.getAuthenticationSuccessful() ? dUL : null;
     }
 
     @SuppressWarnings("unchecked")
