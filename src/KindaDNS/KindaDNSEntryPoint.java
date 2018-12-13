@@ -22,8 +22,6 @@ public class KindaDNSEntryPoint {
     public static void main(String [] args){
         KDNS_DBManager.initDatabase();
 
-        System.out.println("\n");
-
         threadRespostas = new Thread(() -> {
             try {
                 socketRespostas = new ServerSocket(portaRespostas);
@@ -40,6 +38,8 @@ public class KindaDNSEntryPoint {
                         objectOutputStream.flush();
 
                         newConnection.close();
+
+                        System.out.println("\nUm cliente requisitou a lista de servidores!");
                     } catch (SocketException e){
                         System.out.println("SocketException para o socket [socketRespostas]");
                     }
@@ -70,6 +70,8 @@ public class KindaDNSEntryPoint {
                         objectOutputStream.flush();
 
                         newConnection.close();
+
+                        System.out.println("\nUm servidor registou-se na lista de servidores!");
                     } catch (SocketException e){
                         System.out.println("SocketException para o socket [socketRegistos]");
                     } catch (ClassNotFoundException e) {
@@ -92,6 +94,12 @@ public class KindaDNSEntryPoint {
                 System.out.println(input);
             } while (!input.toLowerCase().trim().equals("q") && !input.toLowerCase().trim().equals("quit"));
 
+            scanner.close();
+            try {
+                System.in.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
 
             threadRespostas.interrupt();
             threadRegistos.interrupt();

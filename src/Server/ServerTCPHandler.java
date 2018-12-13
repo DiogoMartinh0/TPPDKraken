@@ -75,7 +75,7 @@ public class ServerTCPHandler extends Thread implements Observer {
                             }
                         } catch (SocketException e){
                             PDUtils.printLineSync("A client has disconnected!");
-                            e.printStackTrace();
+                            //e.printStackTrace();
                             break;
                         } catch (IOException e) {
                             e.printStackTrace();

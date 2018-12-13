@@ -139,25 +139,28 @@ public class LoginForm extends JFrame{
 
         loginButton.addActionListener(listener -> {
             // MUST BE CONNECTED TO SERVER FOR SERVER TO TALK TO DB
-
-            if (!validadeLoginFields()) return;
-
-            try {
-                DataUserLogin dUL = new DataUserLogin(LoginUsername.getText(), LoginPassword.getText());
-                if (clientTCPHandler.authenticateUser(dUL)){
-                    new MainApplication(dUL.getUserName());
-                }else{
-                    JOptionPane.showMessageDialog(getParent(), "Authentication error.");
-                }
-            } catch (Exception e1) {
-                e1.printStackTrace();
-                JOptionPane.showMessageDialog(getParent(), "Authentication error.\nException: " + e1.toString());
-            }
+            authenticateUser();
         });// - </Login Button>
     }
 
     private void createTCPHandler(ServerDetails serverDetails){
         clientTCPHandler = new ClientTCPHandler(serverDetails);
+    }
+
+    private void authenticateUser(){
+        if (!validadeLoginFields()) return;
+
+        try {
+            DataUserLogin dUL = new DataUserLogin(LoginUsername.getText(), LoginPassword.getText());
+            if (clientTCPHandler.authenticateUser(dUL)){
+                new MainApplication(dUL.getUserName());
+            }else{
+                JOptionPane.showMessageDialog(getParent(), "Authentication error.");
+            }
+        } catch (Exception e1) {
+            e1.printStackTrace();
+            JOptionPane.showMessageDialog(getParent(), "Authentication error.\nException: " + e1.toString());
+        }
     }
 
     private boolean validateServer(){
