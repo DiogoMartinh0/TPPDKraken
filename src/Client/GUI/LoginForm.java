@@ -8,14 +8,15 @@ import Models.ServerDetails;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.WindowEvent;
 import java.io.*;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Objects;
 
 public class LoginForm extends JFrame{
-
-    private final static String userFile = "userdetails.txt";
     private JComboBox serverIP;
     private JTextField LoginPassword;
     private JTextField LoginUsername;
@@ -29,16 +30,15 @@ public class LoginForm extends JFrame{
     private JPanel serverIPPanel;
     private JPanel registerPanel;
     private JPanel loginPanel;
+    private ClientTCPHandler clientTCPHandler;
 
     private final String defaultComboBoxString = "Select a server";
 
     ArrayList<ServerDetails> alSD;
 
-    Socket socket = null;
-
-    public LoginForm(String arg1, Socket mySocket) {
-
+    public LoginForm(ClientTCPHandler clientTCPHandler, String arg) {
         super("TP PD Client Login");
+        this.clientTCPHandler = clientTCPHandler;
 
         for (Component cmp : myPanel.getComponents()) {
             if (!(cmp instanceof JRootPane)) {
@@ -67,7 +67,7 @@ public class LoginForm extends JFrame{
 
 
         alSD = new ArrayList<>();
-        if (arg1.equals("debug")){
+        if (arg.equals("debug")){
             DBManager.initDatabase();
             alSD = DBManager.getServerList();
         }else{
@@ -79,7 +79,7 @@ public class LoginForm extends JFrame{
 
         try {
             for (ServerDetails sv : alSD)
-                //serverIP.addItem(String.format("%s [%s:%s]", sv.getNome(), sv.getIp(), sv.getPortaTCP().toString()));
+                //serverIP.addItem(String.format("%s [%s:%s]", sv.getName(), sv.getIp(), sv.getPortaTCP().toString()));
                 serverIP.addItem(sv.toString());
         }catch (Exception e) {
             e.printStackTrace();
@@ -89,8 +89,11 @@ public class LoginForm extends JFrame{
 
         //                  \/ LISTENERS \/
 
-        serverIP.addActionListener(listener -> {
-
+        serverIP.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                createTCPHandler(alSD.get(serverIP.getSelectedIndex() - 1));
+            }
         });
 
         registerButton.addActionListener(listener -> { //  - <Register Button>
@@ -135,39 +138,30 @@ public class LoginForm extends JFrame{
 
         loginButton.addActionListener(listener -> {
             // MUST BE CONNECTED TO SERVER FOR SERVER TO TALK TO DB
-
-            if (!validadeLoginFields()) return;
-
-            ServerDetails choosenServer = alSD.get(serverIP.getSelectedIndex() - 1);
-
-            try {
-                Socket socket = NetworkObjects.getTCPSocketTo(choosenServer.getIp(), choosenServer.getPortaTCP());
-                socket.setSoTimeout(20000);
-                DataUserLogin dUL = new DataUserLogin(LoginUsername.getText(), LoginPassword.getText());
-
-                ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
-                out.writeObject(dUL);
-                out.flush();
-
-                ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
-                dUL = (DataUserLogin) in.readObject();
-
-                if (dUL.getAuthenticationSuccessful()) {
-                    // Autenticado com sucesso
-                    //saveUserDetails();
-                    //mySocket = socket;
-                    new MainApplication(dUL.getUserName());
-                } else {
-                    JOptionPane.showMessageDialog(getParent(), "Authentication error.");
-                }
-
-            } catch (Exception e1) {
-                e1.printStackTrace();
-                JOptionPane.showMessageDialog( getParent(), "Authentication error.\nException: " + e1.toString());
-            }
-        });        // - </Login Button>
+            authenticateUser();
+        });// - </Login Button>
     }
 
+    private void createTCPHandler(ServerDetails serverDetails){
+        clientTCPHandler = new ClientTCPHandler(serverDetails);
+    }
+
+    private void authenticateUser(){
+        if (!validadeLoginFields()) return;
+
+        try {
+            DataUserLogin dUL = new DataUserLogin(LoginUsername.getText(), LoginPassword.getText());
+            if ((dUL = clientTCPHandler.authenticateUser(dUL)) != null){
+                new MainApplication(dUL);
+                this.setVisible(false);
+            }else{
+                JOptionPane.showMessageDialog(getParent(), "Authentication error.");
+            }
+        } catch (Exception e1) {
+            e1.printStackTrace();
+            JOptionPane.showMessageDialog(getParent(), "Authentication error.\nException: " + e1.toString());
+        }
+    }
 
     private boolean validateServer(){
         return !Objects.requireNonNull(serverIP.getSelectedItem()).toString().equalsIgnoreCase(defaultComboBoxString);

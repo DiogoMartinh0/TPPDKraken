@@ -46,11 +46,16 @@ public class ServerTCPHandler extends Thread implements Observer {
                         if (readObject instanceof DataUserLogin){
                             dataUserLogin = (DataUserLogin)readObject;
 
-                            verifyUserIdentity(dataUserLogin);
+                            dataUserLogin = verifyUserIdentity(dataUserLogin);
 
                             objectOutputStream = new ObjectOutputStream(currentClient.getOutputStream());
                             objectOutputStream.writeObject(dataUserLogin);
                             objectOutputStream.flush();
+
+                            if (dataUserLogin.getAuthenticationSuccessful()){
+                                updateUserIP(dataUserLogin.getUserID(), currentClient.getInetAddress().toString().replace("/", ""));
+                                updateUserTCPPort(dataUserLogin.getUserID(), currentClient.getLocalPort());
+                            }
                         }
                     } catch (IOException | ClassNotFoundException e) {
                         PDUtils.printLineSync("An error occurred when trying to authenticate a user, I'm shutting down his connection!");
@@ -64,8 +69,6 @@ public class ServerTCPHandler extends Thread implements Observer {
                         return;
                     }
 
-
-
                     while (!currentClient.isClosed()){
                         try {
                             Object readObject = objectInputStream.readObject();
@@ -75,7 +78,7 @@ public class ServerTCPHandler extends Thread implements Observer {
                             }
                         } catch (SocketException e){
                             PDUtils.printLineSync("A client has disconnected!");
-                            e.printStackTrace();
+                            //e.printStackTrace();
                             break;
                         } catch (IOException e) {
                             e.printStackTrace();
@@ -91,14 +94,31 @@ public class ServerTCPHandler extends Thread implements Observer {
         }
     }
 
-    private void verifyUserIdentity(DataUserLogin dUL){
-        UserDetails userDetails = DBManager.fetchUserInformation(dUL.getUserName());
-        if (userDetails != null && userDetails.getUserID() != -1 && dUL.getPassword().equals(userDetails.getPassword())){
+    private DataUserLogin verifyUserIdentity(DataUserLogin dUL){
+        DataUserLogin dataUserLogin = DBManager.fetchUserInformation(dUL);
+        if (dataUserLogin != null){
             // Utilizador autenticado com sucesso, modifica a flag de retorno
-            dUL.setAuthenticationSuccessful(true);
-            DBManager.resetNumeroDeFalhas(userDetails.getUserID());
+            DBManager.resetNumeroDeFalhas(dataUserLogin.getUserID());
+            return dataUserLogin;
         }
+
+        return dUL;
     }
+
+
+
+    private void updateUserIP(int userID, String ip){
+        DBManager.updateUserIP(userID, ip);
+    }
+
+    private void updateUserTCPPort(int userID, int portaTCP){
+        DBManager.updateUserTCPPort(userID, portaTCP);
+    }
+
+    private void updateUserSharedDirectory(int userID, int portaUDP){
+        DBManager.updateUserUDPPort(userID, portaUDP);
+    }
+
 
     @Override
     public void update(Observable o, Object arg) {
